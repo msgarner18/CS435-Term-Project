@@ -1,0 +1,6 @@
+*
+
+!.gitignore
+!*/MillionSongs/src/main/scala/Main.scala
+!README.md
+!*/MillionSongs/build.sbt
