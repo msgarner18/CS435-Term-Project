@@ -1,7 +1,22 @@
+# ------ Ignore all files ------
 *
 
+
+# ------ Files to NOT IGNORE ---------
 !.gitignore
-!MillionSongs/
-!*/MillionSongs/src/main/scala/Main.scala
+
+# ...even if they are in subdirectories
+!*/
+
+# track all files in MillionSongs/src/main/scala/ recursively
+!MillionSongs/src/main/scala/**
+
+# build.sbt file
+!MillionSongs/build.sbt
+
+# README file
 !README.md
-!*/MillionSongs/build.sbt
+
+
+# --------- Files to MAKE SURE to Ignore ----------
+MillionSongs/src/main/scala/Ignore/**

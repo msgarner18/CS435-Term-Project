@@ -1,21 +1,16 @@
-// package main
+package src
 
-import org.apache.spark.sql.SparkSession
+import src.Ignore.SparkSessionBuilder
 
 object Main {
-  // private val 
 
   def main(args: Array[String]) = {
-    // uncomment below line and change the placeholders accordingly
-    // val sc = SparkSession.builder().master("spark://salem:30361").getOrCreate().sparkContext;
-    
-    // to run locally in IDE,
-    // But comment out when creating the jar to run on cluster
-    // val sc = SparkSession.builder().master("local").getOrCreate().sparkContext
+    val sc = SparkSessionBuilder.getContext()
 
-    // to run with yarn, but this will be quite slow, if you like try it too
-    // when running on the cluster make sure to use "--master yarn" option
-    // val sc = SparkSession.builder().master("yarn").getOrCreate().sparkContext
+
+    // ------- Write Code Here --------
+    val titles = sc.textFile(args(1)).zipWithIndex().mapValues(x=>x+1).map(_.swap)
+    titles.saveAsTextFile(args(2) + "titles")
 
   }
 }
