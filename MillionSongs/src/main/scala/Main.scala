@@ -1,9 +1,8 @@
 package src
 
 import src.Ignore.SparkSessionBuilder
-// import src.Databases.MillionSongsDatabase
-import scala.collection.mutable.Map
-import org.apache.spark.sql.SparkSession
+import src.Validators._
+import src.Models._
 
 object Main {
 
@@ -16,9 +15,15 @@ object Main {
       .option("header", "true")
       .csv(args(0))
 
-    // Write CSV File
-    df.write.option("header", "true")
-   .csv(args(1) + "dataFrame")
+    // --- Spilt data into X and Y --- //
+    val X = df.drop("Danceability")
+    val Y = df.select("SongNumber", "Danceability")
+
+    // --- K-fold Cross Validation --- //
+    val Validator = new KFoldCrossValidator(sc, args) // sc and args are passed so I can debug using output files
+    val accuracyEstimate = Validator.validate(X, Y, () => new RandomForest)
+
+    sc.parallelize(Seq(accuracyEstimate)).coalesce(1).saveAsTextFile(args(1) + "accuracyEstimate")
   }
 }
   
