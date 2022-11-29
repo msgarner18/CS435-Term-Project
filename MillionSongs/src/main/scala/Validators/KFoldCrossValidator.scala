@@ -7,42 +7,44 @@ import org.apache.spark.sql.DataFrame
 import scala.math._
 import scala.util.control.Breaks._
 
-class KFoldCrossValidator(var sc : SparkContext, var args: Array[String], var modelInitializer : () => Model) {
-    def validate(X : DataFrame, Y : DataFrame) : Double = {
+class KFoldCrossValidator(sc : SparkContext, args: Array[String]) extends Validator {
+    def validate(X : DataFrame, Y : DataFrame, modelInitializer : () => Model) : Double = {
         // define constants
         val K = 10
         val N = X.count().asInstanceOf[Int]
         val FOLDSIZE = (N/K).asInstanceOf[Int] + 1
 
         // Shuffle and partition indexes 1 - 100000
-        val indexes = partitionIndexes(N, FOLDSIZE)
+        val indexes = partitionIndexes(N, FOLDSIZE)//List[List[Int]]
         
         // --- Train and run model on K different datasets where i is index of testing data and all other indexes are training data --- //
         val rmseVals = List.range(0, K).map { i =>
             var (xTrain, yTrain, xTest, yTest) = partitionData(X, Y, indexes, i)
 
+            // train and test model
             val model = modelInitializer()
             val trainedModel = model.train(xTrain, yTrain)
             val modelResult = model.run(xTest)
 
+            // calculate error for this test
             val rmse = calculateRMSE(modelResult, yTest)
             // sc.parallelize(Seq(rmse)).coalesce(1).saveAsTextFile(args(1) + "rmse"+i)
 
             rmse
         }
 
+        // average error for all K tests
         val errorSummary = (rmseVals.sum / K).asInstanceOf[Double]
 
         errorSummary
     }
 
+    // ---- Private methods ---- //
     private def shuffleIndexes(N : Int) : List[Int] = {
         val unShuffledIndexes = List.range(1, N+1)
         val shuffledIndexes = Random.shuffle(unShuffledIndexes)
 
         shuffledIndexes
-        // split indexes into FOLDSIZE even chunks
-        
     }
 
     private def partitionIndexes(N : Int, FOLDSIZE : Int) : List[List[Int]] = {
